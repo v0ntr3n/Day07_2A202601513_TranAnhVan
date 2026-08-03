@@ -59,7 +59,7 @@ def select_embedder():
 BENCHMARK_QUERIES = [
     {
         "id": 1,
-        "type": "Số liệu (Number)",
+        "type": "Số liệu (Number) - Có Filter K3",
         "query": "Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập?",
         "gold_answer": "Sinh viên năm thứ hai bị cảnh báo học tập nếu GPA học kỳ đạt dưới 1.40.",
         "expected_doc": "quy-dinh-canh-bao-hoc-tap",
@@ -71,7 +71,7 @@ BENCHMARK_QUERIES = [
         "query": "Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT?",
         "gold_answer": "Thang 100 điểm với 5 tiêu chí: Ý thức học tập (20đ), Chấp hành nội quy (25đ), Ngoại khóa (20đ), Ý thức công dân (25đ), Cán bộ lớp/đoàn thể (10đ).",
         "expected_doc": "thong-tu-16-2015-tt-bgddt",
-        "filter": {"audience": "student"},
+        "filter": None,
     },
     {
         "id": 3,
@@ -79,7 +79,7 @@ BENCHMARK_QUERIES = [
         "query": "Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì?",
         "gold_answer": "Nộp đơn có xác nhận Cố vấn học tập và Trưởng khoa. Điểm ghi nhận là W, không tính GPA/CPA và không hoàn học phí.",
         "expected_doc": "quy-trinh-dang-ky-rut-hoc-phan",
-        "filter": {"department": "academic-affairs"},
+        "filter": None,
     },
     {
         "id": 4,
@@ -87,7 +87,7 @@ BENCHMARK_QUERIES = [
         "query": "Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP?",
         "gold_answer": "Sinh viên dân tộc thiểu số rất ít người vùng ĐBKK, mồ côi cả cha lẫn mẹ, khuyết tật nặng, con người có công với cách mạng.",
         "expected_doc": "nghi-dinh-81-2021-nd-cp",
-        "filter": {"department": "financial-affairs"},
+        "filter": None,
     },
     {
         "id": 5,
@@ -95,9 +95,10 @@ BENCHMARK_QUERIES = [
         "query": "Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên?",
         "gold_answer": "Mức Khá (100% học phí, GPA>=2.5, ĐRL>=70), Mức Giỏi (120%, GPA>=3.2, ĐRL>=80), Mức Xuất sắc (150%, GPA>=3.6, ĐRL>=90). Đăng ký tối thiểu 15 tín chỉ và không bị kỷ luật.",
         "expected_doc": "quy-che-hoc-bong-khuyen-khich",
-        "filter": {"department": "student-affairs"},
+        "filter": None,
     },
 ]
+
 
 
 def simple_llm(prompt: str) -> str:
@@ -132,10 +133,14 @@ def main() -> int:
         print(f"  Gold Answer  : {q['gold_answer']}")
         print(f"  Doc kỳ vọng  : {q['expected_doc']}")
 
-        # Thực hiện tìm kiếm kèm filter
-        results = store.search_with_filter(
-            query=q["query"], top_k=3, metadata_filter=q["filter"]
-        )
+        # Nếu query có metadata_filter -> search_with_filter; ngược lại -> search() chuẩn
+        if q.get("filter"):
+            results = store.search_with_filter(
+                query=q["query"], top_k=3, metadata_filter=q["filter"]
+            )
+        else:
+            results = store.search(query=q["query"], top_k=3)
+
 
         print(f"   Kết quả Top-3 retrieved ({len(results)} chunks):")
         for idx, res in enumerate(results, 1):

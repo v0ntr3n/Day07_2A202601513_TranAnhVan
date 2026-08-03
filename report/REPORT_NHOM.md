@@ -113,14 +113,15 @@ chunker = RecursiveChunker(
 
 | # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
 |---|---------|-------------------------------|-------------------------------|---------|
-| 1 | GPA cảnh báo học tập sinh viên năm 2 | `RecursiveChunker` + Filter (`audience: student`) | Có (Top-1) | Lọc theo `audience: student` loại bỏ các quy chế của giảng viên/nhân viên. |
-| 2 | Mức học bổng khuyến khích học tập | `RecursiveChunker` + Filter (`department: student-affairs`) | Có (Top-1) | Truy xuất chính xác Điều 3 của Quy chế HBKKHT. |
-| 3 | Rút học phần muộn (tuần 2 - tuần 8) | `RecursiveChunker` + Filter (`department: academic-affairs`) | Có (Top-1) | Trả về trọn vẹn Điều 3 về quy trình và điểm ghi nhận W. |
-| 4 | Miễn 100% học phí (NĐ 81/2021) | `RecursiveChunker` + Filter (`department: financial-affairs`) | Có (Top-1) | Trả về danh sách 4 nhóm đối tượng ưu tiên chính sách. |
-| 5 | Tiêu chí đánh giá rèn luyện (TT 16) | `RecursiveChunker` + Filter (`audience: student`) | Có (Top-1) | Trả về bảng 5 tiêu chí chấm điểm rèn luyện thang 100. |
+| 1 | GPA cảnh báo học tập sinh viên năm 2 | `HeadingSectionChunker` + Filter (`audience: student`) | Có (Top-1) | Lọc theo `audience: student` theo đúng quy định K3_VARIANT để tránh lấy tài liệu của đối tượng khác. |
+| 2 | Mức học bổng khuyến khích học tập | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.805) từ `quy-che-hoc-bong-khuyen-khich`. |
+| 3 | Rút học phần muộn (tuần 2 - tuần 8) | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.722) từ `quy-trinh-dang-ky-rut-hoc-phan`. |
+| 4 | Miễn 100% học phí (NĐ 81/2021) | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.786) từ `nghi-dinh-81-2021-nd-cp`. |
+| 5 | Tiêu chí đánh giá rèn luyện (TT 16) | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.933) từ `thong-tu-16-2015-tt-bgddt`. |
 
 **Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> Metadata filtering có vai trò cực kỳ quan trọng. Đặc biệt ở **Câu 1 và Câu 5** (dùng `metadata_filter={"audience": "student"}`) và **Câu 4** (dùng `metadata_filter={"department": "financial-affairs"}`), việc lọc trước bằng metadata giúp loại bỏ hoàn toàn các tài liệu không đúng đơn vị hoặc không đúng đối tượng mục tiêu, giúp kết quả tìm kiếm tương đồng vector đạt điểm số chính xác 100% ở vị trí Top-1.
+> Lọc bằng metadata phát huy tác dụng tốt nhất ở **Câu 1** (dùng `metadata_filter={"audience": "student"}`). Việc lọc `audience` giúp phân biệt chính xác các tài liệu hướng tới sinh viên với các quy chế dành cho giảng viên/nhân viên khi trùng từ khóa. Với các câu hỏi còn lại (Câu 2 đến 5), hàm `search()` tiêu chuẩn không dùng lọc vẫn tìm kiếm tương đồng vector rất hiệu quả và trả về đúng tài liệu ở Top-1.
+
 
 ---
 
