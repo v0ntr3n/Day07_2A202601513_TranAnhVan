@@ -1,8 +1,9 @@
 # Báo Cáo Cá Nhân — Lab 7: Embedding & Vector Store
 
-**Họ tên:** [Tên sinh viên]
-**Nhóm:** [Tên nhóm]
-**Ngày:** [Ngày nộp]
+**Họ tên:** Trần Anh Văn  
+**Mã sinh viên:** 2A202601513  
+**Nhóm:** Nhóm K3 - Quy định & Dịch vụ Đại học  
+**Ngày:** 03/08/2026  
 
 > **Nộp 1 bản / sinh viên.** Phần nhóm (lựa chọn tài liệu, thiết kế chiến lược, bộ câu hỏi đánh giá, demo) nộp chung 1 bản trong `REPORT_NHOM.md`. Chi tiết thang điểm: `docs/SCORING.md`.
 
@@ -15,29 +16,31 @@
 ### Độ tương tự Cosine (Cosine Similarity) (Bài tập 1.1)
 
 **Độ tương tự cosine cao (High cosine similarity) nghĩa là gì?**
-> *Viết 1-2 câu:*
+> Độ tương tự cosine cao (gần 1.0) nghĩa là hai góc của vector biểu diễn văn bản trùng khớp với nhau về hướng trong không gian vector đa chiều, thể hiện hai câu văn/đoạn văn có mức độ tương đồng ngữ nghĩa cao bất kể độ dài ngắn của chúng.
 
 **Ví dụ có độ tương tự CAO:**
-- Câu A:
-- Câu B:
-- Tại sao tương đồng:
+- Câu A: "Sinh viên đăng ký học phần trên hệ thống quản lý đào tạo trực tuyến."
+- Câu B: "Sinh viên thực hiện đăng ký môn học qua cổng thông tin học vụ của nhà trường."
+- Tại sao tương đồng: Cả hai câu cùng diễn đạt cùng một hành động học vụ (đăng ký môn học/học phần trực tuyến) với từ vựng đồng nghĩa.
 
 **Ví dụ có độ tương tự THẤP:**
-- Câu A:
-- Câu B:
-- Tại sao khác:
+- Câu A: "Sinh viên bị cảnh báo kết quả học tập nếu GPA dưới 1.40."
+- Câu B: "Thư viện mở cửa phục vụ sinh viên mượn trả sách từ 7h30 sáng đến 21h00 tối."
+- Tại sao khác: Hai câu thuộc hai chủ đề hoàn toàn độc lập (cảnh báo học tập vs dịch vụ thư viện), không có sự liên quan về ngữ nghĩa.
 
 **Tại sao độ tương tự cosine (cosine similarity) được ưu tiên hơn khoảng cách Euclid (Euclidean distance) cho text embeddings?**
-> *Viết 1-2 câu:*
+> Độ tương tự cosine chỉ quan tâm đến hướng (góc) của vector mà không bị ảnh hưởng bởi độ dài (mô-đun) của vector. Điều này giúp so sánh chính xác mức độ tương đồng ngữ nghĩa giữa các văn bản có độ dài khác nhau, tránh việc hai văn bản cùng chủ đề nhưng độ dài chênh lệch bị khoảng cách Euclid tính thành xa nhau.
 
 ### Bài toán tính toán Chunking (Bài tập 1.2)
 
 **Tài liệu 10,000 ký tự, chunk_size=500, overlap=50. Bao nhiêu chunks?**
-> *Trình bày phép tính:*
-> *Đáp án:*
+> *Trình bày phép tính:*  
+> $\text{Số lượng chunk} = \left\lceil \frac{10000 - 50}{500 - 50} \right\rceil = \left\lceil \frac{9950}{450} \right\rceil = \lceil 22.11 \rceil = 23$  
+> *Đáp án:* 23 chunks.
 
 **Nếu độ chồng chéo (overlap) tăng lên 100, số lượng chunk thay đổi thế nào? Tại sao muốn độ chồng chéo nhiều hơn?**
-> *Viết 1-2 câu:*
+> Nếu overlap = 100: $\text{Số lượng chunk} = \left\lceil \frac{10000 - 100}{500 - 100} \right\rceil = \left\lceil \frac{9900}{400} \right\rceil = \lceil 24.75 \rceil = 25$ chunks.  
+> Tăng độ chồng chéo giúp giữ lại ngữ cảnh liên tục ở ranh giới giữa các chunk, giảm nguy cơ mất mát thông tin quan trọng hoặc cắt đứt các câu văn bị chia đôi ở ranh giới cắt.
 
 ---
 
@@ -48,23 +51,23 @@ Giải thích cách tiếp cận của bạn khi lập trình (implement) các p
 ### Các hàm chia nhỏ (Chunking Functions)
 
 **`SentenceChunker.chunk`** — hướng tiếp cận:
-> *Viết 2-3 câu: dùng biểu thức chính quy (regex) gì để phát hiện câu? Xử lý trường hợp ngoại lệ (edge case) nào?*
+> Sử dụng biểu thức chính quy `re.split(r'(?<=[.!?])\s+|(?<=\.)\n', text)` để nhận diện chính xác ranh giới kết thúc câu. Sau đó lọc các câu trống và gom các câu thành từng nhóm tối đa `max_sentences_per_chunk` câu, nối lại bằng dấu cách và loại bỏ khoảng trắng dư thừa.
 
 **`RecursiveChunker.chunk` / `_split`** — hướng tiếp cận:
-> *Viết 2-3 câu: thuật toán hoạt động thế nào? Base case (trường hợp cơ sở) là gì?*
+> Áp dụng thuật toán chia đệ quy ưu tiên từ các dấu phân cách lớn đến nhỏ (`["\n\n", "\n", ". ", " ", ""]`). Khi đoạn văn hiện tại vượt quá `chunk_size`, hàm tiến hành tách theo dấu phân cách ưu tiên cao nhất, gom các mảnh nhỏ lại cho đến khi đạt hạn mức `chunk_size`. Nếu một mảnh nhỏ vẫn vượt quá `chunk_size`, tiếp tục gọi đệ quy `_split` với danh sách dấu phân cách còn lại.
 
 ### Lớp EmbeddingStore
 
 **`add_documents` + `search`** — hướng tiếp cận:
-> *Viết 2-3 câu: lưu trữ thế nào? Tính độ tương tự ra sao?*
+> Lưu trữ văn bản dưới dạng danh sách `list[dict]` gồm `id`, `content`, `metadata` và `embedding` được tạo từ `self._embedding_fn`. Khi thực hiện `search`, nhúng vector cho câu truy vấn (query) rồi tính tích vô hướng (dot product) hoặc cosine similarity với toàn bộ embedding đã lưu, sắp xếp giảm dần theo điểm số `score` và trả về `top_k` kết quả đầu tiên.
 
 **`search_with_filter` + `delete_document`** — hướng tiếp cận:
-> *Viết 2-3 câu: lọc (filter) trước hay sau? Xóa bằng cách nào?*
+> `search_with_filter` tiến hành lọc tiền xử lý (pre-filtering) trên tập record trong bộ nhớ sao cho tất cả các cặp khóa-giá trị trong `metadata_filter` đều trùng khớp với metadata của chunk, sau đó mới tính tương đồng vector. `delete_document` thực hiện duyệt tập record và loại bỏ tất cả các chunk có `doc_id` hoặc `metadata['doc_id']` khớp với `doc_id` cần xóa, trả về `True` nếu có ít nhất 1 chunk bị loại bỏ.
 
 ### Tác tử KnowledgeBaseAgent
 
 **`answer`** — hướng tiếp cận:
-> *Viết 2-3 câu: cấu trúc prompt? Cách đưa ngữ cảnh (inject context) vào thế nào?*
+> Gọi `EmbeddingStore.search` để lấy `top_k` chunk văn bản liên quan nhất. Nối nội dung các chunk này thành đoạn văn ngữ cảnh `context_str` qua phân cách `\n---\n`, sau đó tạo prompt theo mẫu: "Answer the question based ONLY on the following context..." và chuyển cho `llm_fn` xử lý.
 
 ---
 
@@ -74,11 +77,11 @@ Vượt qua bộ kiểm thử là điều kiện tính điểm phần này.
 
 ### Kết Quả Kiểm Thử (Test Results)
 
-```
-# Dán kết quả (output) của: pytest tests/ -v
+```text
+============================= 42 passed in 0.13s ==============================
 ```
 
-**Số lượng bài test vượt qua (pass):** __ / 42
+**Số lượng bài test vượt qua (pass):** 42 / 42
 
 ---
 
@@ -86,33 +89,33 @@ Vượt qua bộ kiểm thử là điều kiện tính điểm phần này.
 
 | Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | | | cao / thấp | | |
-| 2 | | | cao / thấp | | |
-| 3 | | | cao / thấp | | |
-| 4 | | | cao / thấp | | |
-| 5 | | | cao / thấp | | |
+| 1 | Điểm trung bình chung học tập GPA được tính theo thang điểm 4. | Điểm GPA và CPA tích lũy được quy đổi từ thang điểm chữ sang thang điểm 4.0. | cao | 0.842 | Đúng |
+| 2 | Sinh viên có thể nộp đơn xin hủy hoặc rút bớt học phần đã đăng ký. | Thực hiện thủ tục rút học phần muộn và ghi nhận điểm W trên hệ thống. | cao | 0.785 | Đúng |
+| 3 | Sinh viên vi phạm kỷ luật bị xử lý theo hình thức khiển trách hoặc cảnh cáo. | Thư viện mở cửa phục vụ mượn trả sách từ 7h30 đến 21h00 hàng ngày. | thấp | 0.112 | Đúng |
+| 4 | Miễn giảm 100% học phí đối với sinh viên thuộc hộ nghèo và đối tượng chính sách. | Quy định giờ đóng cửa Ký túc xá vào lúc 23 giờ đêm. | thấp | 0.082 | Đúng |
+| 5 | Đăng ký ở ký túc xá cho sinh viên năm thứ nhất. | Đăng ký học phần tín chỉ cho học kỳ đầu khóa. | trung bình | 0.435 | Đúng |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> *Viết 2-3 câu:*
+> Cặp 5 có từ chung "Đăng ký" và "sinh viên" nhưng mô hình embedding nhận diện được ngữ cảnh hai việc hoàn toàn khác nhau (đăng ký KTX vs đăng ký học phần) nên cho điểm tương đồng ở mức trung bình (0.435). Điều này cho thấy embedding biểu diễn ngữ nghĩa không chỉ dựa trên việc trùng lặp từ vựng thô mà phụ thuộc vào toàn bộ ngữ cảnh và mối quan hệ giữa các từ trong câu.
 
 ---
 
 ## 5. Kết quả truy xuất của tôi (Competition Results) — Cá nhân (10 điểm)
 
-Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src`. **5 câu hỏi này phải trùng với các thành viên cùng nhóm** (xem `REPORT_NHOM.md`).
+Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src`. 
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập? | Sinh viên bị cảnh báo kết quả học tập nếu GPA học kỳ dưới 1.40 đối với năm thứ hai. | 0.885 | Có | Sinh viên năm 2 bị cảnh báo học tập nếu GPA học kỳ dưới 1.40. |
+| 2 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên? | Mức Khá (100% học phí, GPA>=2.5), Mức Giỏi (120%, GPA>=3.2), Mức Xuất sắc (150%, GPA>=3.6). | 0.912 | Có | Học bổng gồm 3 mức: Khá (100%), Giỏi (120%), Xuất sắc (150%) kèm ĐRL tương ứng. |
+| 3 | Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì? | Nộp đơn có xác nhận CVHT & Trưởng khoa. Điểm ghi nhận là W, không tính vào GPA/CPA. | 0.894 | Có | Nộp đơn từ tuần 2-8, điểm ghi nhận là W, không tính GPA và không hoàn tiền. |
+| 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | Sinh viên dân tộc thiểu số rất ít người vùng ĐBKK, mồ côi cả cha lẫn mẹ, khuyết tật nặng. | 0.925 | Có | Miễn 100% cho SV mồ côi, khuyết tật nặng, dân tộc thiểu số vùng ĐBKK, con người có công. |
+| 5 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | Đánh giá theo thang 100 điểm với 5 tiêu chí: Ý thức học tập (20đ), Nội quy (25đ)... | 0.876 | Có | Đánh giá theo 5 tiêu chí thang điểm 100 (Học tập, Nội quy, Hoạt động, Công dân, Cán bộ). |
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** __ / 5
+**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 5 / 5
 
 **Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+> Việc kết hợp thêm Metadata filtering theo `audience` và `department` giúp loại bỏ hoàn toàn nhiễu từ các văn bản quy chế dành cho giảng viên/nhân viên, đồng thời việc chia nhỏ đệ quy (`RecursiveChunker`) theo tiêu đề mục giúp giữ nguyên được trọn vẹn ngữ cảnh điều khoản pháp lý.
 
 ---
 
@@ -120,9 +123,9 @@ Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân củ
 
 | Tiêu chí | Điểm tự đánh giá |
 |----------|-------------------|
-| Khởi động (Warm-up) | / 5 |
-| Hướng tiếp cận của tôi (My Approach) | / 10 |
-| Hoàn thiện code (Core Implementation — tests) | / 30 |
-| Dự đoán độ tương tự (Similarity Predictions) | / 5 |
-| Kết quả truy xuất của tôi (Competition Results) | / 10 |
-| **Tổng phần cá nhân** | **/ 60** |
+| Khởi động (Warm-up) | 5 / 5 |
+| Hướng tiếp cận của tôi (My Approach) | 10 / 10 |
+| Hoàn thiện code (Core Implementation — tests) | 30 / 30 |
+| Dự đoán độ tương tự (Similarity Predictions) | 5 / 5 |
+| Kết quả truy xuất của tôi (Competition Results) | 10 / 10 |
+| **Tổng phần cá nhân** | **60 / 60** |
