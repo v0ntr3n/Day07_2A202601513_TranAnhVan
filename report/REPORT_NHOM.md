@@ -1,10 +1,12 @@
 # Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
 
 **Nhóm:** Nhóm K3 - Quy định & Dịch vụ Đại học  
-**Thành viên:** Trần Anh Văn (2A202601513) và các thành viên nhóm K3  
+**Thành viên:** Trần Văn Anh, Lường Duy Thái
+
+**Vai trò:** Trần Văn Anh chủ yếu thực hiện triển khai pipeline, chunking và đánh giá truy xuất; thành viên còn lại hỗ trợ kiểm tra dữ liệu, góp ý chiến lược và rà soát báo cáo.  
 **Ngày:** 03/08/2026  
 
-> **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
+> Báo cáo này là kết quả làm việc của nhóm 2 người trong quá trình xây dựng hệ thống RAG, chuẩn hóa dữ liệu, chia nhỏ tài liệu, xây dựng vector store và đánh giá chất lượng truy xuất trên bộ dữ liệu quy định, dịch vụ sinh viên.
 
 **Tổng điểm phần nhóm: 40** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình (5).
 
@@ -63,9 +65,9 @@ Chạy `ChunkingStrategyComparator().compare()` trên bộ tài liệu quy đị
 | Quy chế Đào tạo & Học phí | SentenceChunker (`by_sentences`) | 15 | 165.5 ký tự | Tốt với câu đơn, nhưng mất liên kết giữa các điều khoản trong cùng một Mục |
 | Quy chế Đào tạo & Học phí | RecursiveChunker (`recursive`) | 8 | 280.2 ký tự | Rất tốt (giữ nguyên vẹn toàn bộ một Điều/Mục quy định pháp lý) |
 
-### Chiến lược của từng thành viên
+### Chiến lược của nhóm
 
-**Thành viên 1 — Trần Anh Văn**
+**Thành viên 1 — Trần Văn Anh**
 - **Loại chiến lược:** `RecursiveChunker` (`chunk_size=300`, phân cách `["\n\n", "\n", ". ", " ", ""]`)
 - **Mô tả & lý do chọn cho chủ đề này:** Văn bản pháp lý và quy chế đào tạo có cấu trúc phân tầng rõ ràng theo Tiêu đề (#), Điều (##), và các khoản mục (-). Tách đệ quy giúp ưu tiên ngắt ở ranh giới giữa các Điều (`\n\n`), giữ nguyên vẹn ngữ cảnh của từng điều khoản quy định.
 - **Code snippet:**
@@ -76,21 +78,16 @@ chunker = RecursiveChunker(
 )
 ```
 
-**Thành viên 2 — Thành viên Nhóm K3 (Thử nghiệm SentenceChunker)**
+**Thành viên 2 — Thành viên còn lại của nhóm**
 - **Loại chiến lược:** `SentenceChunker` (`max_sentences_per_chunk=3`)
-- **Mô tả & lý do chọn:** Chia nhỏ văn bản theo đơn vị câu giúp mỗi chunk là một tập hợp các ý độc lập, tránh được việc tạo ra chunk quá dài gây loãng vector embedding.
+- **Mô tả & lý do chọn:** Chia nhỏ văn bản theo đơn vị câu giúp mỗi chunk là một tập hợp các ý độc lập, hỗ trợ kiểm tra tính khả dụng của từng đoạn và làm rõ mức độ phù hợp của từng câu hỏi với nội dung tài liệu.
 
-**Thành viên 3 — Thành viên Nhóm K3 (Thử nghiệm FixedSizeChunker)**
-- **Loại chiến lược:** `FixedSizeChunker` (`chunk_size=250`, `overlap=40`)
-- **Mô tả & lý do chọn:** Chiến lược đường cơ sở cố định với độ chồng chéo 40 ký tự giúp tránh mất mát ngữ cảnh tại điểm nối giữa hai chunk kề nhau.
-
-### So Sánh Giữa Các Thành Viên
+### So Sánh giữa hai thành viên
 
 | Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Trần Anh Văn | `RecursiveChunker` | 9.5 / 10 | Giữ trọn vẹn ngữ cảnh của từng Điều/Mục quy định; điểm tương đồng cao. | Độ dài các chunk không đồng đều tùy theo độ dài từng điều khoản. |
-| Thành viên 2 | `SentenceChunker` | 8.0 / 10 | Các chunk đồng đều về số câu, thích hợp cho các câu hỏi tra cứu ngắn. | Đôi khi cắt rời bảng điểm/tiêu chí đánh giá gồm nhiều mục nhỏ. |
-| Thành viên 3 | `FixedSizeChunker` | 7.5 / 10 | Đơn giản, tốc độ xử lý nhanh và kích thước chunk cố định. | Có thể cắt ngang giữa câu hoặc điều khoản làm giảm ngữ nghĩa. |
+| Trần Văn Anh | `RecursiveChunker` | 9.5 / 10 | Giữ trọn vẹn ngữ cảnh của từng Điều/Mục quy định; độ tương đồng cao. | Độ dài các chunk không đồng đều tùy theo từng điều khoản. |
+| Thành viên còn lại | `SentenceChunker` | 8.0 / 10 | Chunk đồng đều về số câu, phù hợp với câu hỏi ngắn và tra cứu. | Có thể cắt rời mối liên hệ giữa các phần trong cùng một quy định. |
 
 **Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
 > `RecursiveChunker` là chiến lược tốt nhất cho chủ đề Quy định & Dịch vụ Đại học vì các văn bản quy chế có cấu trúc phân đoạn rõ ràng (`\n\n` giữa các Điều). Việc ưu tiên ngắt theo đoạn giúp mỗi chunk chứa trọn vẹn một điều khoản quy định, từ đó vector nhúng phản ánh chính xác nhất nội dung pháp lý và đạt độ chính xác truy xuất cao nhất.
@@ -168,4 +165,3 @@ chunker = RecursiveChunker(
 | Chất lượng truy xuất (Retrieval Quality) | 9 / 10 |
 | Thuyết trình (Demo) & Failure Analysis | 5 / 5 |
 | **Tổng phần nhóm** | **39 / 40** |
-
