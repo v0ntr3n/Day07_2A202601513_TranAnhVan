@@ -180,3 +180,56 @@ class ChunkingStrategyComparator:
             }
         return results
 
+
+class HeadingSectionChunker:
+    """
+    Chunker that splits text by markdown headings (#, ##, ###), keeping heading title in child chunks.
+    If a section exceeds max_chunk_size, fallback to RecursiveChunker for that section.
+    """
+
+    def __init__(self, max_chunk_size: int = 400, heading_pattern: str = r"(?m)^(#{1,6}\s+.*)$") -> None:
+        self.max_chunk_size = max_chunk_size
+        self.heading_pattern = heading_pattern
+        self.fallback_chunker = RecursiveChunker(chunk_size=max_chunk_size)
+
+    def chunk(self, text: str) -> list[str]:
+        if not text or not text.strip():
+            return []
+
+        matches = list(re.finditer(self.heading_pattern, text))
+        if not matches:
+            return self.fallback_chunker.chunk(text)
+
+        sections: list[tuple[str, str]] = []
+        if matches[0].start() > 0:
+            preamble = text[: matches[0].start()].strip()
+            if preamble:
+                sections.append(("", preamble))
+
+        for i in range(len(matches)):
+            heading_title = matches[i].group(1).strip()
+            start_pos = matches[i].end()
+            end_pos = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+            body = text[start_pos:end_pos].strip()
+            sections.append((heading_title, body))
+
+        final_chunks: list[str] = []
+        for heading, body in sections:
+            full_section = f"{heading}\n\n{body}".strip() if heading else body
+            if not full_section:
+                continue
+
+            if len(full_section) <= self.max_chunk_size:
+                final_chunks.append(full_section)
+            else:
+                sub_chunks = self.fallback_chunker.chunk(body)
+                for sc in sub_chunks:
+                    if heading and not sc.startswith(heading):
+                        sub_chunk_with_context = f"{heading}\n{sc}"
+                    else:
+                        sub_chunk_with_context = sc
+                    final_chunks.append(sub_chunk_with_context)
+
+        return final_chunks
+
+
