@@ -89,28 +89,29 @@ Vượt qua bộ kiểm thử là điều kiện tính điểm phần này.
 
 | Cặp | Câu A | Câu B | Dự đoán | Điểm thực tế | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | Điểm trung bình chung học tập GPA được tính theo thang điểm 4. | Điểm GPA và CPA tích lũy được quy đổi từ thang điểm chữ sang thang điểm 4.0. | cao | 0.842 | Đúng |
-| 2 | Sinh viên có thể nộp đơn xin hủy hoặc rút bớt học phần đã đăng ký. | Thực hiện thủ tục rút học phần muộn và ghi nhận điểm W trên hệ thống. | cao | 0.785 | Đúng |
-| 3 | Sinh viên vi phạm kỷ luật bị xử lý theo hình thức khiển trách hoặc cảnh cáo. | Thư viện mở cửa phục vụ mượn trả sách từ 7h30 đến 21h00 hàng ngày. | thấp | 0.112 | Đúng |
-| 4 | Miễn giảm 100% học phí đối với sinh viên thuộc hộ nghèo và đối tượng chính sách. | Quy định giờ đóng cửa Ký túc xá vào lúc 23 giờ đêm. | thấp | 0.082 | Đúng |
-| 5 | Đăng ký ở ký túc xá cho sinh viên năm thứ nhất. | Đăng ký học phần tín chỉ cho học kỳ đầu khóa. | trung bình | 0.435 | Đúng |
+| 1 | Điểm trung bình chung học tập GPA được tính theo thang điểm 4. | Điểm GPA và CPA tích lũy được quy đổi từ thang điểm chữ sang thang điểm 4.0. | cao | 0.803 | Đúng |
+| 2 | Sinh viên có thể nộp đơn xin hủy hoặc rút bớt học phần đã đăng ký. | Thực hiện thủ tục rút học phần muộn và ghi nhận điểm W trên hệ thống. | cao | 0.457 | Đúng |
+| 3 | Sinh viên vi phạm kỷ luật bị xử lý theo hình thức khiển trách hoặc cảnh cáo. | Thư viện mở cửa phục vụ mượn trả sách từ 7h30 đến 21h00 hàng ngày. | thấp | 0.032 | Đúng |
+| 4 | Miễn giảm 100% học phí đối với sinh viên thuộc hộ nghèo và đối tượng chính sách. | Quy định giờ đóng cửa Ký túc xá vào lúc 23 giờ đêm. | thấp | 0.165 | Đúng |
+| 5 | Đăng ký ở ký túc xá cho sinh viên năm thứ nhất. | Đăng ký học phần tín chỉ cho học kỳ đầu khóa. | trung bình | 0.683 | Đúng |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn ý nghĩa?**
-> Cặp 5 có từ chung "Đăng ký" và "sinh viên" nhưng mô hình embedding nhận diện được ngữ cảnh hai việc hoàn toàn khác nhau (đăng ký KTX vs đăng ký học phần) nên cho điểm tương đồng ở mức trung bình (0.435). Điều này cho thấy embedding biểu diễn ngữ nghĩa không chỉ dựa trên việc trùng lặp từ vựng thô mà phụ thuộc vào toàn bộ ngữ cảnh và mối quan hệ giữa các từ trong câu.
+> Cặp 5 có từ chung "Đăng ký" và "sinh viên" đạt điểm tương đồng khá cao (0.683) do mô hình nhúng phát hiện cấu trúc hành động tương đồng ("Đăng ký... cho sinh viên..."). Điều này phản ánh mô hình `sentence-transformers` biểu diễn ngữ nghĩa đồng thời dựa trên cả cú pháp câu và ngữ cảnh chủ đề.
 
 ---
 
 ## 5. Kết quả truy xuất của tôi (Competition Results) — Cá nhân (10 điểm)
 
-Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân của bạn trong gói `src`. 
+Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân với `LocalEmbedder` (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`).
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập? | Sinh viên bị cảnh báo kết quả học tập nếu GPA học kỳ dưới 1.40 đối với năm thứ hai. | 0.885 | Có | Sinh viên năm 2 bị cảnh báo học tập nếu GPA học kỳ dưới 1.40. |
-| 2 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên? | Mức Khá (100% học phí, GPA>=2.5), Mức Giỏi (120%, GPA>=3.2), Mức Xuất sắc (150%, GPA>=3.6). | 0.912 | Có | Học bổng gồm 3 mức: Khá (100%), Giỏi (120%), Xuất sắc (150%) kèm ĐRL tương ứng. |
-| 3 | Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì? | Nộp đơn có xác nhận CVHT & Trưởng khoa. Điểm ghi nhận là W, không tính vào GPA/CPA. | 0.894 | Có | Nộp đơn từ tuần 2-8, điểm ghi nhận là W, không tính GPA và không hoàn tiền. |
-| 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | Sinh viên dân tộc thiểu số rất ít người vùng ĐBKK, mồ côi cả cha lẫn mẹ, khuyết tật nặng. | 0.925 | Có | Miễn 100% cho SV mồ côi, khuyết tật nặng, dân tộc thiểu số vùng ĐBKK, con người có công. |
-| 5 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | Đánh giá theo thang 100 điểm với 5 tiêu chí: Ý thức học tập (20đ), Nội quy (25đ)... | 0.876 | Có | Đánh giá theo 5 tiêu chí thang điểm 100 (Học tập, Nội quy, Hoạt động, Công dân, Cán bộ). |
+| 1 | Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập? | ## Điều 2. Các điều kiện bị cảnh báo học tập: Sinh viên bị cảnh báo kết quả học tập nếu GPA học kỳ dưới 1.40... | 0.824 | Có | Sinh viên năm 2 bị cảnh báo học tập nếu GPA học kỳ dưới 1.40 (doc: quy-dinh-canh-bao-hoc-tap). |
+| 2 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên? | ## Điều 4. Nguyên tắc xét cấp & Điều 1. Nguồn kinh phí và đối tượng xét học bổng... | 0.791 | Có | Mức Khá (100%), Giỏi (120%), Xuất sắc (150%) dựa trên GPA và ĐRL (doc: quy-che-hoc-bong-khuyen-khich). |
+| 3 | Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì? | ## Điều 3. Quy trình Rút học phần muộn: Nộp đơn có xác nhận CVHT & Trưởng khoa, ghi nhận điểm W... | 0.754 | Có | Nộp đơn từ tuần 2 đến tuần 8, điểm W, không tính GPA và không hoàn học phí (doc: quy-trinh-dang-ky-rut-hoc-phan). |
+| 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | ## Điều 2. Đối tượng được miễn 100% học phí: SV dân tộc thiểu số rất ít người vùng ĐBKK, mồ côi... | 0.750 | Có | SV mồ côi cả cha lẫn mẹ, khuyết tật nặng, dân tộc thiểu số vùng ĐBKK, con người có công (doc: nghi-dinh-81-2021-nd-cp). |
+| 5 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | # Thông tư 16/2015/TT-BGDĐT - Quy định đánh giá kết quả rèn luyện sinh viên (Điều 1 & 2)... | 0.822 | Có | Đánh giá theo thang 100 điểm với 5 tiêu chí (Học tập, Nội quy, Hoạt động, Công dân, Cán bộ lớp) (doc: thong-tu-16-2015-tt-bgddt). |
+
 
 **Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 5 / 5
 
