@@ -102,15 +102,16 @@ Vượt qua bộ kiểm thử là điều kiện tính điểm phần này.
 
 ## 5. Kết quả truy xuất của tôi (Competition Results) — Cá nhân (10 điểm)
 
-Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân với `LocalEmbedder` (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`).
+Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân với `HeadingSectionChunker` (`max_chunk_size=400`) và `LocalEmbedder` (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`).
 
 | # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập? | ## Điều 2. Các điều kiện bị cảnh báo học tập: Sinh viên bị cảnh báo kết quả học tập nếu GPA học kỳ dưới 1.40... | 0.824 | Có | Sinh viên năm 2 bị cảnh báo học tập nếu GPA học kỳ dưới 1.40 (doc: quy-dinh-canh-bao-hoc-tap). |
-| 2 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên? | ## Điều 4. Nguyên tắc xét cấp & Điều 1. Nguồn kinh phí và đối tượng xét học bổng... | 0.791 | Có | Mức Khá (100%), Giỏi (120%), Xuất sắc (150%) dựa trên GPA và ĐRL (doc: quy-che-hoc-bong-khuyen-khich). |
-| 3 | Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì? | ## Điều 3. Quy trình Rút học phần muộn: Nộp đơn có xác nhận CVHT & Trưởng khoa, ghi nhận điểm W... | 0.754 | Có | Nộp đơn từ tuần 2 đến tuần 8, điểm W, không tính GPA và không hoàn học phí (doc: quy-trinh-dang-ky-rut-hoc-phan). |
-| 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | ## Điều 2. Đối tượng được miễn 100% học phí: SV dân tộc thiểu số rất ít người vùng ĐBKK, mồ côi... | 0.750 | Có | SV mồ côi cả cha lẫn mẹ, khuyết tật nặng, dân tộc thiểu số vùng ĐBKK, con người có công (doc: nghi-dinh-81-2021-nd-cp). |
-| 5 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | # Thông tư 16/2015/TT-BGDĐT - Quy định đánh giá kết quả rèn luyện sinh viên (Điều 1 & 2)... | 0.822 | Có | Đánh giá theo thang 100 điểm với 5 tiêu chí (Học tập, Nội quy, Hoạt động, Công dân, Cán bộ lớp) (doc: thong-tu-16-2015-tt-bgddt). |
+| 1 | Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập? | ## Điều 2. Các điều kiện bị cảnh báo học tập: Sinh viên bị cảnh báo kết quả học tập nếu GPA học kỳ dưới 1.40... | 0.838 | Có | Sinh viên năm 2 bị cảnh báo học tập nếu GPA học kỳ dưới 1.40 (doc: quy-dinh-canh-bao-hoc-tap). |
+| 2 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | # Thông tư 16/2015/TT-BGDĐT - Quy định đánh giá kết quả rèn luyện sinh viên (Điều 1 & 2)... | 0.933 | Có | Đánh giá theo thang 100 điểm với 5 tiêu chí (Học tập 20đ, Nội quy 25đ, Ngoại khóa 20đ, Công dân 25đ, Cán bộ 10đ) (doc: thong-tu-16-2015-tt-bgddt). |
+| 3 | Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì? | ## Điều 3. Quy trình Rút học phần muộn (Sau tuần 2 đến trước tuần 8): Nộp đơn có xác nhận CVHT & Trưởng khoa... | 0.722 | Có | Nộp đơn từ tuần 2 đến tuần 8, điểm W, không tính GPA và không hoàn học phí (doc: quy-trinh-dang-ky-rut-hoc-phan). |
+| 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | # Nghị định 81/2021/NĐ-CP - Quy định về học phí và chính sách miễn giảm học phí (Điều 2)... | 0.786 | Có | SV mồ côi cả cha lẫn mẹ, khuyết tật nặng, dân tộc thiểu số vùng ĐBKK, con người có công (doc: nghi-dinh-81-2021-nd-cp). |
+| 5 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên? | # Quy chế Xét cấp Học bổng Khuyến khích Học tập (Điều 1 & 4)... | 0.805 | Có | Mức Khá (100%), Giỏi (120%), Xuất sắc (150%) dựa trên GPA và ĐRL (doc: quy-che-hoc-bong-khuyen-khich). |
+
 
 
 **Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 5 / 5
