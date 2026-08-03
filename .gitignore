@@ -1,19 +1,46 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
 
-# Environment
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment & Secrets
 .env
 .env.local
+.env.*.local
+
+# Playwright & Testing Artifacts
+.playwright-mcp/
+playwright-report/
+test-results/
+
+# Temporary / Scratch Files
+scratch/
+tmp/
+temp/
+*.log
+*.tmp
+*.bak
 
 # OS
 .DS_Store
+Thumbs.db
 
-# IDE
+# IDE & Tools
 .vscode/
 .idea/
 .omx/
-.venv/
 src_w_solution/
