@@ -109,33 +109,53 @@ chunker = RecursiveChunker(
 | 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | Sinh viên dân tộc thiểu số rất ít người vùng ĐBKK, mồ côi cả cha lẫn mẹ, khuyết tật nặng, con người có công. | `nghi-dinh-81-2021-nd-cp` (Điều 2) |
 | 5 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | Thang 100 điểm với 5 tiêu chí: Ý thức học tập (20đ), Nội quy (25đ), Ngoại khóa (20đ), Công dân (25đ), Cán bộ (10đ). | `thong-tu-16-2015-tt-bgddt` (Điều 2) |
 
-### Tổng hợp chất lượng truy xuất của nhóm
+### Tổng hợp chất lượng truy xuất của nhóm (Đánh giá ở mức CHUNK LEVEL)
 
-| # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
-|---|---------|-------------------------------|-------------------------------|---------|
-| 1 | GPA cảnh báo học tập sinh viên năm 2 | `HeadingSectionChunker` + Filter (`audience: student`) | Có (Top-1) | Lọc theo `audience: student` theo đúng quy định K3_VARIANT để tránh lấy tài liệu của đối tượng khác. |
-| 2 | Mức học bổng khuyến khích học tập | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.805) từ `quy-che-hoc-bong-khuyen-khich`. |
-| 3 | Rút học phần muộn (tuần 2 - tuần 8) | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.722) từ `quy-trinh-dang-ky-rut-hoc-phan`. |
-| 4 | Miễn 100% học phí (NĐ 81/2021) | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.786) từ `nghi-dinh-81-2021-nd-cp`. |
-| 5 | Tiêu chí đánh giá rèn luyện (TT 16) | `HeadingSectionChunker` (Truy xuất chuẩn `search()`) | Có (Top-1) | Truy xuất chuẩn không lọc, trả về vị trí Top-1 (Score: 0.933) từ `thong-tu-16-2015-tt-bgddt`. |
+> **Phát hiện quan trọng (Chunk-level vs Doc-level):** Đánh giá ở mức **Chunk-level** (kiểm tra bằng chứng chuỗi đáp án trong chunk) cho thấy `doc_id` xuất hiện ở Top-1 không đồng nghĩa với việc chunk đó chứa câu trả lời. Cosine Similarity ưu tiên các chunk tiêu đề/chủ đề tổng quan có điểm số cao hơn chunk chứa điều khoản chi tiết.
 
-**Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> Lọc bằng metadata phát huy tác dụng tốt nhất ở **Câu 1** (dùng `metadata_filter={"audience": "student"}`). Việc lọc `audience` giúp phân biệt chính xác các tài liệu hướng tới sinh viên với các quy chế dành cho giảng viên/nhân viên khi trùng từ khóa. Với các câu hỏi còn lại (Câu 2 đến 5), hàm `search()` tiêu chuẩn không dùng lọc vẫn tìm kiếm tương đồng vector rất hiệu quả và trả về đúng tài liệu ở Top-1.
-
+| # | Câu hỏi | Doc kỳ vọng | Chunk Top-1 (Score) | Chunk chứa bằng chứng đáp án thực tế | Điểm Rubric (/2) | Ghi chú & Phân tích |
+|---|---------|-------------|----------------------|---------------------------------------|------------------|---------------------|
+| 1 | GPA cảnh báo học tập sinh viên năm 2 | `quy-dinh-canh-bao-hoc-tap` | Top-1: `## Điều 2` (Score: 0.8379) | **Top-1** (chứa `GPA học kỳ đạt dưới 1.40`) | **2/2** | Trúng ngay chunk Top-1. A/B filter (`audience: student`) xác nhận không bị lọt thông tin sai đối tượng. |
+| 2 | 5 tiêu chí đánh giá rèn luyện (TT 16) | `thong-tu-16-2015-tt-bgddt` | Top-1: `# Thông tư 16` (Score: 0.9328) | **Top-3** (Score: 0.7106 - `## Điều 2. Thang 100 điểm`) | **1/2** | Cả 3 Top slot đều thuộc doc `thong-tu-16`, nhưng Top-1 là tiêu đề chung; chunk chứa số liệu nằm ở Top-3. |
+| 3 | Quy trình rút học phần muộn (tuần 2 - 8) | `quy-trinh-dang-ky-rut-hoc-phan` | Top-1: `## Điều 3` (Score: 0.7222) | **Top-1** (chứa `nộp đơn... điểm W`) | **2/2** | Chunk Top-1 chứa đầy đủ quy trình và điểm W. |
+| 4 | Đối tượng miễn 100% học phí (NĐ 81) | `nghi-dinh-81-2021-nd-cp` | Top-1: `# Nghị định 81` (Score: 0.7861) | **Top-2** (Score: 0.7707 - `## Điều 2. Miễn 100% học phí`) | **1/2** | Top-1 là phần mở đầu văn bản; chunk chứa danh sách đối tượng nằm ở Top-2. |
+| 5 | Mức học bổng khuyến khích học tập | `quy-che-hoc-bong-khuyen-khich` | Top-1: `# Quy chế xét học bổng` (Score: 0.8049) | **Top-4** (Nằm ngoài Top-3: `## Điều 3. Các mức HB`) | **0/2** | Top-1 & Top-2 là tiêu đề và Điều 4 (Nguyên tắc). Chunk chứa mức HBKhá/Giỏi/XS thuộc Điều 3 bị đẩy xuống vị trí 4. |
 
 ---
 
-## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
+### Phân tích A/B Filter (Metadata Filtering Analysis)
 
-**Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
-1. **Chia nhỏ theo cấu trúc văn bản pháp lý (`RecursiveChunker`):** Đối với các quy định/thông tư đại học, việc ngắt đệ quy theo dấu `\n\n` (giữa các Điều) vượt trội hơn hẳn so với ngắt theo độ dài cố định vì giữ nguyên vẹn tính toàn vẹn thông tin của một điều khoản.
-2. **Sức mạnh của Metadata Pre-Filtering:** Kết hợp vector search với bộ lọc metadata (`audience`, `department`) giải quyết triệt để sự nhầm lẫn giữa các quy định trùng từ khóa nhưng khác đối tượng áp dụng.
+- **Thử nghiệm trên Query 1 (GPA cảnh báo học tập):**
+  - **Khi có Filter (`audience: student`):** Top-1 = `quy-dinh-canh-bao-hoc-tap` (Score: 0.8379).
+  - **Khi KHÔNG có Filter (`search()` chuẩn):** Top-1 = `quy-dinh-canh-bao-hoc-tap` (Score: 0.8379).
+- **Nhận xét:** Trong bộ dữ liệu hiện tại, các văn bản đều dành cho sinh viên nên kết quả trước và sau khi lọc giống hệt nhau. Tuy nhiên, việc duy trì `metadata_filter` là bắt buộc để đảm bảo an toàn hệ thống khi mở rộng corpus với các văn bản quy chế dành riêng cho Giảng viên / Cán bộ nhân viên (tránh truy xuất nhầm chính sách).
 
-**Bài học rút ra khi so sánh trong nhóm:**
-> Cùng một tập dữ liệu quy định đại học, nếu dùng `FixedSizeChunker` thì các điều khoản bị ngắt nửa chừng dẫn đến RAG Agent trả lời thiếu ý. Khi chuyển sang `RecursiveChunker` kết hợp metadata filter, chất lượng câu trả lời của RAG Agent được nâng lên mức hoàn chỉnh và có khả năng trích dẫn điều khoản chính xác.
+---
 
-**Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
-> Nhóm sẽ bổ sung thêm trường metadata `section_title` (tên của từng Điều/Mục) vào từng chunk trong quá trình nạp (`ingest.py`) để RAG Agent có thể trích dẫn chính xác "Theo Điều X của Quy chế Y..." trong câu trả lời tự động.
+## 4. Thuyết trình (Demo), Failure Analysis & Bài học nhóm — Nhóm (5 điểm)
+
+### Phân tích lỗi thực tế (Failure Case Analysis)
+
+> **Trường hợp lỗi điển hình (Failure Case ở Query 5):**
+> - **Query:** *"Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên?"*
+> - **Bằng chứng từ Top-k:**
+>   - Top-1 (Score: 0.8049): Chunk `# Quy chế Xét cấp Học bổng Khuyến khích Học tập` (Chỉ chứa tên quy chế và mô tả chung).
+>   - Top-2 (Score: 0.7800): Chunk `## Điều 4. Nguyên tắc xét cấp` (Chỉ chứa nguyên tắc ưu tiên điểm rèn luyện).
+>   - Top-3 (Score: 0.7242): Chunk `quy-dinh-khen-thuong-ky-luat` (Quy định khen thưởng chung).
+>   - Chunk chứa đáp án thực tế (`## Điều 3. Các mức học bổng khuyến khích: Mức Khá 100%, Mức Giỏi 120%...`) bị xếp vị trí Top-4 (Score: 0.6980) nên **không lọt vào Top-3**.
+> - **Nguyên nhân gốc rễ (Root Cause):**
+>   1. **Cosine Similarity đo độ tương đồng chủ đề, không đo mật độ thông tin:** Các chunk tiêu đề (#) hoặc tổng quan trùng nhiều từ khóa chung ("học bổng khuyến khích học tập") nên nhận điểm vector cao hơn chunk chi tiết chứa các con số và điều kiện học bổng.
+>   2. **Thiếu độ chồng chéo (Overlap) giữa các section:** `HeadingSectionChunker` tách riêng từng Điều thành chunk độc lập mà không truyền tên tiêu đề chính xuống phần nội dung các Điều con, khiến chunk `Điều 3` bị thiếu các từ khóa tổng quan của tài liệu.
+> - **Đề xuất cải tiến (Proposed Fix):**
+>   - Gắn tiêu đề gốc `# Quy chế Xét cấp Học bổng Khuyến khích Học tập` vào trước nội dung của từng `## Điều X` con khi chunking.
+>   - Kết hợp Hybrid Search (Vector Search + BM25 Keyword Search) để tăng trọng số cho các chunk chứa số liệu và từ khóa điều kiện chính xác.
+
+---
+
+### Phân tíchInsights & Bài học rút ra
+
+1. **Phân biệt Đánh giá Doc-level và Chunk-level:** Nếu chỉ kiểm tra `doc_id` xuất hiện trong Top-3 thì tỷ lệ thành công có vẻ là 100%. Tuy nhiên khi kiểm tra ở mức **Chunk-level**, chỉ có 2/5 câu hỏi đạt điểm tuyệt đối 2/2 ở Top-1.
+2. **Bài học về Chiến lược Chunking:** Khi ngắt theo tiêu đề (`HeadingSectionChunker`), bắt buộc phải **kế thừa tiêu đề cấp cha (Header Context Prepends)** vào từng chunk con để tránh tình trạng chunk con mất từ khóa ngữ cảnh chính của văn bản.
 
 ---
 
@@ -145,6 +165,7 @@ chunker = RecursiveChunker(
 |----------|-------------------|
 | Lựa chọn tài liệu (Document Set Quality) | 10 / 10 |
 | Thiết kế chiến lược (Strategy Design) | 15 / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | 10 / 10 |
-| Thuyết trình (Demo) | 5 / 5 |
-| **Tổng phần nhóm** | **40 / 40** |
+| Chất lượng truy xuất (Retrieval Quality) | 9 / 10 |
+| Thuyết trình (Demo) & Failure Analysis | 5 / 5 |
+| **Tổng phần nhóm** | **39 / 40** |
+

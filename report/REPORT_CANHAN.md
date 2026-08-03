@@ -104,20 +104,20 @@ Vượt qua bộ kiểm thử là điều kiện tính điểm phần này.
 
 Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân với `HeadingSectionChunker` (`max_chunk_size=400`) và `LocalEmbedder` (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`).
 
-| # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có liên quan không? (Relevant) | Câu trả lời của Agent (tóm tắt) |
-|---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | Điểm trung bình chung học kỳ GPA bao nhiêu thì sinh viên năm thứ hai bị cảnh báo học tập? | ## Điều 2. Các điều kiện bị cảnh báo học tập: Sinh viên bị cảnh báo kết quả học tập nếu GPA học kỳ dưới 1.40... | 0.838 | Có | Sinh viên năm 2 bị cảnh báo học tập nếu GPA học kỳ dưới 1.40 (doc: quy-dinh-canh-bao-hoc-tap). |
-| 2 | Các tiêu chí và thang điểm đánh giá kết quả rèn luyện sinh viên theo Thông tư 16/2015/TT-BGDĐT? | # Thông tư 16/2015/TT-BGDĐT - Quy định đánh giá kết quả rèn luyện sinh viên (Điều 1 & 2)... | 0.933 | Có | Đánh giá theo thang 100 điểm với 5 tiêu chí (Học tập 20đ, Nội quy 25đ, Ngoại khóa 20đ, Công dân 25đ, Cán bộ 10đ) (doc: thong-tu-16-2015-tt-bgddt). |
-| 3 | Quy trình rút học phần muộn sau tuần 2 đến trước tuần 8 được thực hiện ra sao và ghi nhận điểm gì? | ## Điều 3. Quy trình Rút học phần muộn (Sau tuần 2 đến trước tuần 8): Nộp đơn có xác nhận CVHT & Trưởng khoa... | 0.722 | Có | Nộp đơn từ tuần 2 đến tuần 8, điểm W, không tính GPA và không hoàn học phí (doc: quy-trinh-dang-ky-rut-hoc-phan). |
-| 4 | Những sinh viên thuộc đối tượng nào được miễn 100% học phí theo Nghị định 81/2021/NĐ-CP? | # Nghị định 81/2021/NĐ-CP - Quy định về học phí và chính sách miễn giảm học phí (Điều 2)... | 0.786 | Có | SV mồ côi cả cha lẫn mẹ, khuyết tật nặng, dân tộc thiểu số vùng ĐBKK, con người có công (doc: nghi-dinh-81-2021-nd-cp). |
-| 5 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích học tập dành cho sinh viên? | # Quy chế Xét cấp Học bổng Khuyến khích Học tập (Điều 1 & 4)... | 0.805 | Có | Mức Khá (100%), Giỏi (120%), Xuất sắc (150%) dựa trên GPA và ĐRL (doc: quy-che-hoc-bong-khuyen-khich). |
+> **Kiểm chứng ở mức CHUNK LEVEL:** Kiểm tra xem chuỗi bằng chứng đáp án có nằm chính xác trong chunk truy xuất được hay không (thay vì chỉ kiểm tra tên file `doc_id`).
 
+| # | Câu hỏi (Query) | Top-1 Chunk truy xuất được (tóm tắt) | Điểm Score | Có bằng chứng đáp án trong Top-3? | Vị trí Chunk chứa đáp án | Câu trả lời của Agent (tóm tắt) |
+|---|-------|--------------------------------|-------|-----------------------------|--------------------------|------------------------|
+| 1 | GPA bao nhiêu sinh viên năm 2 bị cảnh báo học tập? | `## Điều 2. Các điều kiện bị cảnh báo học tập: GPA học kỳ dưới 1.40...` | 0.838 | Có | **Top-1** | GPA dưới 1.40 đối với SV năm 2 (doc: quy-dinh-canh-bao-hoc-tap). |
+| 2 | Các tiêu chí và thang điểm đánh giá rèn luyện (TT 16)? | `# Thông tư 16/2015/TT-BGDĐT - Quy định đánh giá kết quả rèn luyện...` | 0.933 | Có | **Top-3** (Score 0.711 - `## Điều 2. Thang 100 điểm`) | Đánh giá theo thang 100 điểm với 5 tiêu chí (doc: thong-tu-16-2015-tt-bgddt). |
+| 3 | Quy trình rút học phần muộn (tuần 2 - tuần 8)? | `## Điều 3. Quy trình Rút học phần muộn: Nộp đơn có xác nhận CVHT, điểm W...` | 0.722 | Có | **Top-1** | Nộp đơn từ tuần 2-8, điểm W, không hoàn tiền (doc: quy-trinh-dang-ky-rut-hoc-phan). |
+| 4 | Đối tượng được miễn 100% học phí (NĐ 81/2021)? | `# Nghị định 81/2021/NĐ-CP - Quy định về học phí và chính sách miễn giảm...` | 0.786 | Có | **Top-2** (Score 0.771 - `## Điều 2. Đối tượng miễn 100%`) | Miễn 100% cho SV mồ côi, khuyết tật, dân tộc thiểu số ĐBKK (doc: nghi-dinh-81-2021-nd-cp). |
+| 5 | Điều kiện tiêu chuẩn và các mức học bổng khuyến khích? | `# Quy chế Xét cấp Học bổng Khuyến khích Học tập...` | 0.805 | Không (Nằm Top-4) | **Top-4** (Score 0.698 - `## Điều 3. Mức HBKhá/Giỏi/XS`) | Trích xuất từ ngữ cảnh tổng quan nguyên tắc học bổng (doc: quy-che-hoc-bong-khuyen-khich). |
 
+**Bao nhiêu câu hỏi trả về chunk chứa đáp án trực tiếp trong top-3?** 4 / 5
 
-**Bao nhiêu câu hỏi trả về chunk có liên quan trong top-3?** 5 / 5
-
-**Điều hay nhất tôi học được từ thành viên khác / nhóm khác (qua demo):**
-> Việc kết hợp thêm Metadata filtering theo `audience` và `department` giúp loại bỏ hoàn toàn nhiễu từ các văn bản quy chế dành cho giảng viên/nhân viên, đồng thời việc chia nhỏ đệ quy (`RecursiveChunker`) theo tiêu đề mục giúp giữ nguyên được trọn vẹn ngữ cảnh điều khoản pháp lý.
+**Bài học đắt giá nhất rút ra từ kiểm thử Chunk-level & Failure Analysis:**
+> Đánh giá bằng `doc_id` cho cảm giác giả tạo rằng 5/5 câu đều thành công vì đúng file xuất hiện ở Top-1. Tuy nhiên khi kiểm tra chuỗi bằng chứng đáp án ở mức **Chunk-level**, câu 5 bị trượt khỏi Top-3 do chunk tiêu đề `# Quy chế` có điểm Cosine cao hơn chunk nội dung `## Điều 3`. Bài học rút ra là: Cosine Similarity đo độ tương đồng chủ đề chung chứ không đo mật độ thông tin chi tiết; cần kế thừa tiêu đề cấp cha vào từng chunk con để tránh mất mát từ khóa tổng quan.
 
 ---
 
@@ -129,5 +129,5 @@ Chạy **5 câu hỏi đánh giá của nhóm** trên mã nguồn cá nhân vớ
 | Hướng tiếp cận của tôi (My Approach) | 10 / 10 |
 | Hoàn thiện code (Core Implementation — tests) | 30 / 30 |
 | Dự đoán độ tương tự (Similarity Predictions) | 5 / 5 |
-| Kết quả truy xuất của tôi (Competition Results) | 10 / 10 |
-| **Tổng phần cá nhân** | **60 / 60** |
+| Kết quả truy xuất của tôi (Competition Results) | 9 / 10 |
+| **Tổng phần cá nhân** | **59 / 60** |
